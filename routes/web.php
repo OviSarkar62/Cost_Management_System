@@ -52,6 +52,12 @@ Route::get('/income/edit/{id}', [IncomeController::class, 'editIncome'])->name('
 Route::put('/income/{id}', [IncomeController::class, 'updateIncome'])->name('update.income');
 // Delete income
 Route::delete('/income/{id}', [IncomeController::class, 'destroyIncome'])->name('destroy.income');
+// In your routes file (web.php)
+Route::get('/income/search', [IncomeController::class, 'searchIncome'])->name('search.income');
+// In your routes file (web.php)
+Route::get('/income/filter', [IncomeController::class, 'filterIncome'])->name('filter.income');
+
+
 
 //----------------------------------Expense-----------------------------------------------------
 // Create income
@@ -66,3 +72,7 @@ Route::get('/expense/edit/{id}', [ExpenseController::class, 'editExpense'])->nam
 Route::put('/expense/{id}', [ExpenseController::class, 'updateExpense'])->name('update.expense');
 // Delete income
 Route::delete('/expense/{id}', [ExpenseController::class, 'destroyExpense'])->name('destroy.expense');
+
+Route::get('/expense/search', [ExpenseController::class, 'searchExpense'])->name('search.expense');
+// In your routes file (web.php)
+Route::get('/expense/filter', [ExpenseController::class, 'filterExpense'])->name('filter.expense');

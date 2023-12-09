@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,16 +45,16 @@ class IncomeController extends Controller
             return redirect('/dashboard')->with('success', 'Income created successfully.');
         }
 
-        // Add Income List
-        public function incomeList()
-        {
-            if (Auth::check()) {
-                $incomes = Income::where('user_id', auth()->user()->id)->get();
-                return view('income.index-income', compact('incomes'));
-            } else {
-                return redirect()->route('login'); // Redirect to the login page
-            }
+    // Add Income List
+    public function incomeList()
+    {
+        if (Auth::check()) {
+            $incomes = Income::where('user_id', auth()->user()->id)->get();
+            return view('income.index-income', compact('incomes'));
+        } else {
+            return redirect()->route('login'); // Redirect to the login page
         }
+    }
 
         public function editIncome($id)
         {
@@ -96,4 +97,79 @@ class IncomeController extends Controller
             $income->delete();
             return redirect()->route('list.income')->with('success', 'Income deleted successfully.');
         }
+
+        public function searchIncome(Request $request)
+        {
+            if (Auth::check()) {
+                $query = $request->input('search');
+
+                // Perform the search and retrieve matching income records
+                $incomes = Income::where('user_id', auth()->user()->id)
+                    ->where(function ($q) use ($query) {
+                        $q->where('title', 'like', '%' . $query . '%')
+                            ->orWhere('description', 'like', '%' . $query . '%')
+                            ->orWhere('amount', 'like', '%' . $query . '%');
+                    })
+                    ->get();
+
+                // Pass the search results to the view
+                return view('income.index-income', compact('incomes'));
+            } else {
+                // Redirect to the login page if the user is not authenticated
+                return redirect()->route('login');
+            }
+        }
+
+        public function filterIncome(Request $request)
+        {
+            if (Auth::check()) {
+                $filter = $request->input('filter');
+
+                // Check if the selected filter is 'all' or not set
+                if ($filter == 'all' || !$filter) {
+                    // Get all income records without a time filter
+                    $incomes = Income::where('user_id', auth()->user()->id)->get();
+                } else {
+                    // Get the current date
+                    $currentDate = Carbon::now();
+
+                    // Set the start date based on the selected filter
+                    switch ($filter) {
+                        case 'this_week':
+                            $startDate = $currentDate->startOfWeek();
+                            break;
+                        case 'this_month':
+                            $startDate = $currentDate->startOfMonth();
+                            break;
+                        case 'last_2_months':
+                            $startDate = $currentDate->subMonths(2)->startOfMonth();
+                            break;
+                        case 'last_3_months':
+                            $startDate = $currentDate->subMonths(3)->startOfMonth();
+                            break;
+                        case 'last_6_months':
+                            $startDate = $currentDate->subMonths(6)->startOfMonth();
+                            break;
+                        case 'last_year':
+                            $startDate = $currentDate->subYear()->startOfYear();
+                            break;
+                        default:
+                            $startDate = $currentDate->startOfWeek();
+                            break;
+                    }
+
+                    // Get income records within the specified time interval
+                    $incomes = Income::where('user_id', auth()->user()->id)
+                        ->where('date', '>=', $startDate)
+                        ->get();
+                }
+
+                // Pass the filtered results to the view
+                return view('income.index-income', compact('incomes'));
+            } else {
+                // Redirect to the login page if the user is not authenticated
+                return redirect()->route('login');
+            }
+        }
+
 }

@@ -7,7 +7,7 @@
             <div class="create-body-container">
                 <div class="card">
                     <div class="card-header">
-                        Create Income
+                        Add Income
                     </div>
                     <div class="card-body">
                         <form method="POST" action="{{ route('store.income') }}">
@@ -32,7 +32,7 @@
                                 <input type="text" name="amount" id="amount" class="form-control" required>
                             </div>
                             <br>
-                            <button type="submit" class="btn btn-dark">Create</button>
+                            <button type="submit" class="btn btn-dark">Add</button>
                         </form>
                     </div>
                 </div>

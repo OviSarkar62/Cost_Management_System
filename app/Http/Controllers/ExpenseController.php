@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -96,5 +97,64 @@ class ExpenseController extends Controller
 
         $expense->delete();
         return redirect()->route('list.expense')->with('success', 'Expense deleted successfully.');
+    }
+
+    public function searchExpense(Request $request)
+    {
+        if (Auth::check()) {
+            $query = $request->input('search');
+            $expenses = Expense::where('user_id', auth()->user()->id)
+                ->where(function ($q) use ($query) {
+                    $q->where('title', 'like', '%' . $query . '%')
+                        ->orWhere('description', 'like', '%' . $query . '%')
+                        ->orWhere('amount', 'like', '%' . $query . '%');
+                })
+                ->get();
+
+            return view('expense.index-expense', compact('expenses'));
+        } else {
+            return redirect()->route('login');
+        }
+    }
+
+    public function filterExpense(Request $request)
+    {
+        if (Auth::check()) {
+            $filter = $request->input('filter');
+
+            // Retrieve all expenses by default
+            $expenses = Expense::where('user_id', auth()->user()->id);
+
+            // Apply time filter
+            if ($filter != 'all') {
+                $currentDate = Carbon::now();
+                switch ($filter) {
+                    case 'this_week':
+                        $expenses->where('date', '>=', $currentDate->startOfWeek());
+                        break;
+                    case 'this_month':
+                        $expenses->where('date', '>=', $currentDate->startOfMonth());
+                        break;
+                    case 'last_2_months':
+                        $expenses->where('date', '>=', $currentDate->subMonths(2)->startOfMonth());
+                        break;
+                    case 'last_3_months':
+                        $expenses->where('date', '>=', $currentDate->subMonths(3)->startOfMonth());
+                        break;
+                    case 'last_6_months':
+                        $expenses->where('date', '>=', $currentDate->subMonths(6)->startOfMonth());
+                        break;
+                    case 'last_year':
+                        $expenses->where('date', '>=', $currentDate->subYear()->startOfYear());
+                        break;
+                }
+            }
+
+            $expenses = $expenses->get();
+
+            return view('expense.index-expense', compact('expenses'));
+        } else {
+            return redirect()->route('login');
+        }
     }
 }

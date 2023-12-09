@@ -16,13 +16,14 @@ class UserController extends Controller
     {
         $totalIncomes = Income::where('user_id', auth()->user()->id)->sum('amount');
         $totalExpenses = Expense::where('user_id', auth()->user()->id)->sum('amount');
+        $totalIncomeCount = Income::where('user_id', auth()->user()->id)->count();
+        $totalExpenseCount = Expense::where('user_id', auth()->user()->id)->count();
         $totalTransactionCount = Income::where('user_id', auth()->user()->id)->count() + Expense::where('user_id', auth()->user()->id)->count();
         $remainingAmount = $totalIncomes - $totalExpenses;
         if (Auth::check()) {
-
-            return view('user.user-dashboard', compact('totalIncomes', 'totalExpenses', 'totalTransactionCount', 'remainingAmount'));
+            return view('user.user-dashboard', compact('totalIncomes', 'totalExpenses', 'totalTransactionCount', 'remainingAmount','totalIncomeCount','totalExpenseCount'));
         } else {
-            return redirect()->route('login'); // Redirect to the login page
+            return redirect()->route('login');
         }
     }
 }
